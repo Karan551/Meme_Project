@@ -1,6 +1,5 @@
 
 **/__pycache__/
-manage.py
 db.sqlite3
 *.pyc
 .venv
