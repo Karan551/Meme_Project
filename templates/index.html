@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +11,20 @@
 <p>
     Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem commodi ea facere fugiat fugit hic ipsam itaque
     optio tempora ullam.
+
 </p>
+<h3>{{msg}}</h3>
+<!--Authentication system-->
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="text" name="name" id="name" placeholder="Enter your Name">
+    <input type="email" name="email" id="email" placeholder="Enter your email">
+    <input type="tel" name="contact" id="contact" placeholder="Enter your contact number:" maxlength="10">
+    <input type="password" name="password" id="password" placeholder="Enter your password">
+    <input type="submit" value="Submit">
+
+    <!--    <input type="text" name="name" id="name" placeholder="Enter your Name">-->
+</form>
+<a href="/login" style="margin:10px;display:block">Go To Login Page.</a>
 </body>
 </html>
