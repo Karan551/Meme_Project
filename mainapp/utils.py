@@ -1,5 +1,7 @@
 # ---------------This behaves like a database temporary.---------
 # user=[{"name":name,"email":email,"password":password},{}.....]
+import bcrypt
+
 users = []
 
 
@@ -81,8 +83,10 @@ def loginUser(user_details, cursor):
     # To check that is already registered or not.
     checkUser = userExist(user_details, cursor)
     if checkUser["response"]:
+        db_stored_password = checkUser["user"][1]
         # if user exist then check user password with registered password in our database.
-        if user_details["password"] == checkUser["user"][1]:
+        # form_password == database password
+        if bcrypt.checkpw(user_details["password"].encode(), db_stored_password.encode()):
             return {"statusCode": 200, "message": "Successfully Logged In."}
         else:
             # If password doesn't match then do this.
