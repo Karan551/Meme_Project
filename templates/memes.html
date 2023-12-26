@@ -6,6 +6,20 @@
 </head>
 <body>
 <h1>This is private page.</h1>
-<a href="/logout"><button>Log Out</button></a>
+<a href="/logout">
+    <button>Log Out</button>
+</a>
+{% for meme in meme_list%}
+<p>{{meme.id}}</p>
+<p>{{meme.name}}</p>
+<div class="container">
+    <img src="{{meme.url}}" alt="meme-image">
+    <button><a href="/edit_meme/?id={{meme.id}}">Edit this Meme</a></button>
+</div>
+
+
+{% endfor %}
+
+
 </body>
 </html>

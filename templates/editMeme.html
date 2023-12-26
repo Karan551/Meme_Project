@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Edit Meme</title>
 </head>
 <body>
-$END$
+<h1>This is an edit meme page.</h1>
+<form action="/details/" method="POST">
+    {% csrf_token %}
+    <input type="text" name="meme_id" id="meme_id" value="{{meme_id}}" readonly>
+    <input type="text" name="text0" id="text0" autocomplete="off" placeholder="Enter First Text:">
+    <input type="text" name="text1" id="tex1" autocomplete="off" placeholder="Enter Second Text:">
+    <button type="submit">Submit</button>
+</form>
 </body>
 </html>

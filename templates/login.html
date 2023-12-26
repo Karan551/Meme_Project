@@ -9,8 +9,9 @@
 <h3>{{msg}}</h3>
 <form action="/login/" method="post">
     {% csrf_token %}
-    <input type="email" name="email" id="email" placeholder="Enter your Email:">
-    <input type="password" name="password" id="password" placeholder="Enter your Password:">
+    <input type="email" name="email" id="email" placeholder="Enter your Email:" autocomplete="username">
+    <input type="password" name="password" id="password" placeholder="Enter your Password:"
+           autocomplete="current-password">
     <input type="submit" value="Submit">
 
 </form>
