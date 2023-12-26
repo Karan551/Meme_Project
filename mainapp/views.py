@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from .utils import registerUser, loginUser
 import psycopg2
 # For session storage.
 from django.contrib.sessions.backends.db import SessionStore
-
+import bcrypt
+import requests
 
 # from django.http import HttpResponse
 
@@ -26,7 +27,6 @@ except Exception as e:
 
 # ---------------For Session Handling--------------
 s = SessionStore()
-# print(s)
 
 
 # ---Middle ware---
@@ -44,24 +44,32 @@ def checkSession():
         return False
 
 
-# Create your views here.
+# -------------- Create your views here.
 def index(request):
     if request.method == "POST":
-        # print(request.POST)
         name = request.POST["name"]
         email = request.POST["email"]
         contact = request.POST["contact"]
         password = request.POST["password"]
+        # Encode your password
+        password = password.encode()
+        print("Encode password:", password)
+        # Hashed your password
+        hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+        # print("Hashed Password:", hashed)
+        # print("This is decoded password:", hashed.decode("utf-8"))
+
+        # Decode your password (And store the hashed password in our database.
+        hashedPassword = hashed.decode("utf-8")
         # Collect User Details in Dictionary Format.
         userDetails = {
             "name": name,
             "email": email,
             "contact": contact,
-            "password": password,
+            "password": hashedPassword,
         }
         # ------------------------Register User-----------
         response = registerUser(userDetails, cursor)
-        # print("Total User is:", response["totalUsers"])
         if response["statusCode"] == 200:
             s["email"] = userDetails["email"]
             s["contact"] = userDetails["contact"]
@@ -74,6 +82,7 @@ def index(request):
     return render(request, "index.html")
 
 
+# ---------------------Login api-----------
 def login(request):
     sessionExist = checkSession()
     # if session doesn't exist then login user and if user's session exist
@@ -82,8 +91,6 @@ def login(request):
         if request.method == "POST":
             email = request.POST["email"]
             password = request.POST["password"]
-            # print("User email is :", email)
-            # print("User password is :", password)
             # collect user data to logged-in user.
             userData = {
                 "email": email,
@@ -112,13 +119,20 @@ def login(request):
 
 
 def get_memes(request):
+    # URL: https://api.imgflip.com/get_memes
+    meme_data = requests.get("https://api.imgflip.com/get_memes")
+    web_data = meme_data.json()
+    # this will gives us:-> [{},{},{},.....]
+    # print("this is data:", web_data["data"]["memes"])  # this will gives list of dictionary.
     sessionExists = checkSession()
-    # if user's session doesn't exist the redirect to login user.
-    if not sessionExists:
-        redirect("/login/")
     # if user's session exist then redirect to private page.
+    if sessionExists:
+        context = {"meme_list": web_data["data"]["memes"]}
+        return render(request, "memes.html", context)
+
+    # if user's session doesn't exist the redirect to login user.
     else:
-        return render(request, "memes.html")
+        return redirect("/login/")
 
 
 def logout(request):
@@ -130,3 +144,48 @@ def logout(request):
     except Exception as error:
         print("This is error:", error)
         return redirect("/memes/")
+
+
+def edit_memes(request):
+    sessionStatus = checkSession()
+    if sessionStatus:
+        # Get the meme id that we get with the help of GET request.
+        template_id = request.GET["id"]
+        context = {
+            "meme_id": template_id
+        }
+        return render(request, "editMeme.html", context)
+    else:
+        return redirect("/login/")
+
+
+def meme_details(request):
+    sessionStatus = checkSession()
+    # If session exist then do this.
+    if sessionStatus:
+        if request.method == "POST":
+            meme_id = request.POST["meme_id"]
+            text0 = request.POST["text0"]
+            text1 = request.POST["text1"]
+
+            # POST request for meme api
+            payload = {
+                "template_id": meme_id,
+                "username": 'Adityachaudhary2',
+                "password": 'qweasd01!@',
+                "text0": text0,
+                "text1": text1
+            }
+            response = requests.post("https://api.imgflip.com/caption_image", params=payload).json()
+            context = {
+                "url": response['data']['url']
+            }
+            # html_str = f'''
+            #             <img src="{response['data']['url']}" alt="meme">
+            #             <a href="{response['data']['url']}" alt="memes">View Meme</a>
+            #             '''
+            # return HttpResponse(html_str)
+            return render(request, "showEditedMemes.html", context)
+
+    else:
+        redirect("/login/")
